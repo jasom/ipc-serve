@@ -18,10 +18,13 @@
 	(values eof-value 0)
 	(values v l))))
 
+(defun tnet-dump (obj)
+  (tnetstring:dump-tnetstring obj))
+
 (defun test-server ()
   ;(setf lparallel:*kernel*
 	;(lparallel:make-kernel 10)
 	;ipc-serve::*parse-function* #'tnet-parse)
   ;(with-socket (server (make-local-server (merge-pathnames #p"test-server2.socket" (user-homedir-pathname))))
-    (server-loop (merge-pathnames #p"test-server2.socket" (user-homedir-pathname)) #'tnet-parse :type :local)
-    )
+    (server-loop (merge-pathnames #p"test-server2.socket" (user-homedir-pathname))
+		 #'tnet-parse #'tnet-dump :type :local))

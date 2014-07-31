@@ -1,10 +1,10 @@
-;;;; redo2.asd
+;;;; ipc-serve.asd
 
 (asdf:defsystem #:ipc-serve
   :serial t
-  :description "Describe redo2 here"
-  :author "Your Name <your.name@example.com>"
-  :license "Specify license here"
+  :description "A simple socket job-server"
+  :author "Jason Miller <jason@milr.com>"
+  :license "MIT/X11"
   :depends-on (#:alexandria
                #:iolib/os
                #:iolib/pathnames

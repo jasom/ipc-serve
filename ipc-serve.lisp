@@ -1,10 +1,11 @@
-;;;; redo2.lisp
+;;; redo2.lisp
 
 (in-package #:ipc-serve)
 
 ;;; "redo2" goes here. Hacks and glory await!
 
 (defvar *parse-function*)
+(defvar *dump-function*)
 (defvar *job-channel*)
 (defvar *buffer-size* 2048)
 (defparameter *clients* nil)
@@ -21,12 +22,6 @@
   (in-full 0)
   (outbuf nil)
   (out-full 0))
-
-(defmethod start-job ((name (eql :add)) client job-id args)
-  (list
-   client
-   job-id
-   (apply #'+ args)))
 
 (defun handle-new-connection (server)
   (let ((socket (accept-connection server)))
@@ -103,19 +98,21 @@
 (defun send-result (client job-id value)
     (if (client-outbuf client)
 	(setf (cdr (client-outbuf client))
-	      (cons (tnetstring:dump-tnetstring (list job-id value))
+	      (cons (funcall *dump-function* (list job-id value))
 		    (cdr (client-outbuf client))))
 	(progn
-	  (push (tnetstring:dump-tnetstring (list job-id value)) (client-outbuf client))
+	  (push (funcall *dump-function* (list job-id value)) (client-outbuf client))
 	  (pushnew 'ready-to-write-p (client-events client)))
 	  ))
 
-(defun server-loop (connect-to parse-fn
+(defun server-loop (connect-to parse-fn dump-fn
 		    &key (type :local) (threads 10))
-  (setf *job-channel* (make-channel)
+  (setf
 	lparallel:*kernel*
+	*job-channel* (make-channel)
 	(lparallel:make-kernel threads)
-	ipc-serve::*parse-function* parse-fn)
+	*parse-function* parse-fn
+	*dump-function* dump-fn)
   (with-socket
       (server
        (ecase type
